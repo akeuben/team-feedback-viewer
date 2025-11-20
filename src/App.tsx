@@ -27,9 +27,9 @@ const FeedbackTable: FC<StudentFeedbackProps> = ({ feedback }) => {
     const mapScore = (response: string): number => {
         const normalized = response.toLowerCase();
         if (normalized.includes("actively participated")) return 4;
-        if (normalized.includes("participated")) return 3;
         if (normalized.includes("somewhat participated")) return 2;
         if (normalized.includes("didn't participate") || normalized.includes("did not participate")) return 1;
+        if (normalized.includes("participated")) return 3;
         return 0;
     };
 
