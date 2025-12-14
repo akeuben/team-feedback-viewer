@@ -176,7 +176,7 @@ const App: FC = () => {
             const reviewer = row[keys[2]]?.trim() || "";
 
             for (let i = 0; i < 5; i++) {
-                const base = 6 + i * 5;
+                const base = 10 + i * 5;
                 let name = row[keys[base]];
                 if (!name || name === "NA") continue;
                 name = normalizeName(name);
