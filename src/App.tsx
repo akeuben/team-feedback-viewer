@@ -11,9 +11,82 @@ interface FeedbackRow {
     comments: string;
 }
 
+interface ReflectionRow {
+    name: string;
+    professional: string;
+    engagement: string;
+    instructions: string;
+    sousChef: string;
+    recipe: string;
+    questions: string;
+    project: string;
+}
+
+const professionalResponses = {
+    "I can sometimes participate in Foods class in a professional manner": 2,
+    "I can usually participate in Foods class in a professional manner": 3,
+    "I can always participate in Foods class in a professional manner": 4,
+    "I can work towards participating in Foods class in a professional manner": 2,
+}
+
+const engagementResponses = {
+    "I get bored when watching the cooking videos": 2,
+    "I like to talk to my teammate about what is happening in the video": 3,
+    "I like to think about how to put the recipe together when watching to cooking videos": 4,
+    "I don't find the videos useful": 2,
+}
+
+const instructionResponses = {
+    "I stop for instructions on cooking days but get distracted": 2,
+    "I stop to HEAR the instructions from Mrs. K on cooking days": 3,
+    "I stop to LISTEN to the instructions from Mrs. K on cooking days": 4,
+    "I am usually too busy in the kitchen to stop and listen to instructions on cooking days": 2,
+}
+
+const sousChefResponses = {
+    "I will reluctantly be the sous chef": 2,
+    "I don't mind being the sous chef": 3,
+    "I love being the sous chef": 4,
+    "I avoid being the sous chef": 2,
+}
+
+const recipeResponses = {
+    "I like to learn how to make a recipe by watching my teammates": 2,
+    "I reference the recipe while cooking": 3,
+    "I follow the recipe instructions step by step": 4,
+    "My favorite thing to do in the kitchen is to get the ingredients": 2,
+}
+
+const questionsResponses = {
+    "I am too embarrassed or too shy to ask questions about cooking": 2,
+    "I ask clarifying questions while COOKING": 3,
+    "I ask clarifying questions while PLANNING": 4,
+    "I ask what I need to do next while cooking": 2,
+}
+
+const projectResponses = {
+    "I haven't started": 1,
+    "I have yet to contribute to the magazine": 1,
+    "I have done one of these things": 2,
+    "Some of the recipes we have made so far are": 2,
+    "I have contributed in one or two of these ways": 2,
+    "I have done two of these things": 2,
+    "Most of the recipes we have made so far are in my recipe book": 3,
+    "I have contributed in three of these ways": 3,
+    "I have done three of these things": 3,
+    "All the recipes we have made so far are in my recipe book": 4,
+    "I have contributed to the magazine in all of these ways": 4,
+    "I have done all of these things": 4,
+}
+
 interface StudentFeedbackProps {
     student: string;
     feedback: FeedbackRow[];
+}
+
+interface StudentReflectionProps {
+    student: string;
+    reflection: ReflectionRow;
 }
 
 interface MergeModalProps {
@@ -22,8 +95,70 @@ interface MergeModalProps {
     onClose: () => void;
 }
 
+const mapReflection = (response: string, choices: Record<string, number>) => {
+    for(const choice of Object.keys(choices)) {
+        if(response.toLowerCase().trim().replace(/ +/g, ' ').includes(choice.toLowerCase().trim().replace(/ +/g, ' '))) {
+            return choices[choice];
+        }
+    }
+    alert("unknown response detected");
+    return -Infinity;
+}
+
+const ReflectionTable: FC<StudentReflectionProps> = ({reflection}) => {
+    const professional = mapReflection(reflection.professional, professionalResponses);
+    const engagement = mapReflection(reflection.engagement, engagementResponses);
+    const instructions = mapReflection(reflection.instructions, instructionResponses);
+    const sousChef = mapReflection(reflection.sousChef, sousChefResponses);
+    const recipe = mapReflection(reflection.recipe, recipeResponses);
+    const questions = mapReflection(reflection.questions, questionsResponses);
+    const project = mapReflection(reflection.project, projectResponses);
+
+    const outcomeProfessionalism = professional;
+    const outcomeInterest = (engagement + instructions + sousChef + recipe + questions) / 5;
+    const outcomeProject = project;
+
+    return (
+        <div className="overflow-x-auto">
+            <table className="min-w-full border-collapse">
+                <tr>
+                    <td className="border p-2 font-semibold"><b>Question 1</b></td>
+                    <td className="border p-2">{reflection.professional}</td>
+                </tr>
+                <tr>
+                    <td className="border p-2 font-semibold"><b>Question 2</b></td>
+                    <td className="border p-2">{reflection.engagement}</td>
+                </tr>
+                <tr>
+                    <td className="border p-2 font-semibold"><b>Question 3</b></td>
+                    <td className="border p-2">{reflection.instructions}</td>
+                </tr>
+                <tr>
+                    <td className="border p-2 font-semibold"><b>Question 4</b></td>
+                    <td className="border p-2">{reflection.sousChef}</td>
+                </tr>
+                <tr>
+                    <td className="border p-2 font-semibold"><b>Question 5</b></td>
+                    <td className="border p-2">{reflection.recipe}</td>
+                </tr>
+                <tr>
+                    <td className="border p-2 font-semibold"><b>Question 6</b></td>
+                    <td className="border p-2">{reflection.questions}</td>
+                </tr>
+                <tr>
+                    <td className="border p-2 font-semibold"><b>Question 7</b></td>
+                    <td className="border p-2">{reflection.project}</td>
+                </tr>
+            </table>
+            <p><b>Professionalism:</b> {outcomeProfessionalism}</p>
+            <p><b>Interest:</b> {outcomeInterest}</p>
+            <p><b>SpecialProject:</b> {outcomeProject}</p>
+        </div>
+    );
+}
+
 // --- Components ---
-const FeedbackTable: FC<StudentFeedbackProps> = ({ feedback }) => {
+const FeedbackTable: FC<StudentFeedbackProps> = ({ feedback}) => {
     const mapScore = (response: string): number => {
         const normalized = response.toLowerCase();
         if (normalized.includes("actively participated")) return 4;
@@ -32,6 +167,8 @@ const FeedbackTable: FC<StudentFeedbackProps> = ({ feedback }) => {
         if (normalized.includes("participated")) return 3;
         return 0;
     };
+
+
 
     const planningScores = feedback.map(f => mapScore(f.planning));
     const cookingScores = feedback.map(f => mapScore(f.cooking));
@@ -75,6 +212,8 @@ const FeedbackTable: FC<StudentFeedbackProps> = ({ feedback }) => {
             <p><b>Average planning:</b> {meanPlanning.toFixed(2)}</p>
             <p><b>Average cooking:</b> {meanCooking.toFixed(2)}</p>
             <p><b>Average cleaning:</b> {meanCleaning.toFixed(2)}</p>
+
+            <p><b>SpecialProject:</b> TODO</p>
         </div>
     );
 };
@@ -119,8 +258,10 @@ const MergeModal: FC<MergeModalProps> = ({ students, onMerge, onClose }) => {
 // --- Main App ---
 const App: FC = () => {
     const [rows, setRows] = useState<FeedbackRow[]>([]);
+    const [reflections, setReflections] = useState<Record<string, ReflectionRow>>({});
     const [search, setSearch] = useState<string>("");
     const [mergeOpen, setMergeOpen] = useState<boolean>(false);
+    const [mode, setMode] = useState<boolean>(false);
 
     const normalizeName = (name: string | undefined): string => name?.trim().toLowerCase() || "";
 
@@ -131,7 +272,11 @@ const App: FC = () => {
         Papa.parse<Record<string, string>>(file, {
             header: true,
             skipEmptyLines: true,
-            complete: (result) => setRows(processData(result.data)),
+            complete: (result) => {
+                const [rows, reflection] = processData(result.data);
+                setRows(rows);
+                setReflections(reflection);
+            },
         });
     };
 
@@ -168,8 +313,9 @@ const App: FC = () => {
         URL.revokeObjectURL(url);
     };
 
-    const processData = (data: Record<string, string>[]): FeedbackRow[] => {
-        const out: FeedbackRow[] = [];
+    const processData = (data: Record<string, string>[]): [FeedbackRow[], Record<string, ReflectionRow>] => {
+        const feedback: FeedbackRow[] = [];
+        let reflection: Record<string, ReflectionRow> = {};
 
         data.forEach((row) => {
             const keys = Object.keys(row);
@@ -181,7 +327,7 @@ const App: FC = () => {
                 if (!name || name === "NA") continue;
                 name = normalizeName(name);
 
-                out.push({
+                feedback.push({
                     reviewer,
                     student: name,
                     planning: row[keys[base + 1]] || "",
@@ -192,7 +338,24 @@ const App: FC = () => {
             }
         });
 
-        return out;
+        data.forEach(row => {
+            const keys = Object.keys(row);
+            const name = row[keys[2]]?.trim();
+            if(!name) return;
+
+            reflection[name] = {
+                name: name,
+                professional: row[keys[3]],
+                engagement: row[keys[4]],
+                instructions: row[keys[5]],
+                sousChef: row[keys[6]],
+                recipe: row[keys[7]],
+                questions: row[keys[8]],
+                project: row[keys[9]],
+            }
+        })
+
+        return [feedback, reflection];
     };
 
     const groupByStudent = (data: FeedbackRow[]): Record<string, FeedbackRow[]> => {
@@ -240,13 +403,27 @@ const App: FC = () => {
             >
                 Export CSV
             </button>
+            <button
+                className="px-4 py-2 bg-orange-600 text-white rounded ml-2"
+                onClick={() => setMode(!mode)}
+            >
+                Mode: {mode ? "Feedback" : "Reflection"}
+            </button>
 
-            {filteredStudents.map(([student, feedback], idx) => (
-                <div key={idx} className="bg-white shadow rounded p-6 border mt-6">
-                    <h2 className="text-2xl font-semibold mb-4">{student}</h2>
-                    <FeedbackTable student={student} feedback={feedback} />
-                </div>
-            ))}
+            {mode ? 
+                filteredStudents.map(([student, feedback], idx) => (
+                    <div key={idx} className="bg-white shadow rounded p-6 border mt-6">
+                        <h2 className="text-2xl font-semibold mb-4">{student}</h2>
+                        <FeedbackTable student={student} feedback={feedback}/>
+                    </div>
+                )) : Object.entries(reflections).map(([student, reflection], idx) => (
+                    <div key={idx} className="bg-white shadow rounded p-6 border mt-6">
+                        <h2 className="text-2xl font-semibold mb-4">{student}</h2>
+                        <ReflectionTable student={student} reflection={reflection} />
+                    </div>
+                ))
+                
+            }
 
             {mergeOpen && (
                 <MergeModal
